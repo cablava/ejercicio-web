@@ -20,11 +20,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
+        // Build participants avatars (up to 4) and a +N badge when needed
+        const participants = details.participants || [];
+        const maxVisible = 4;
+        let avatarsHTML = "";
+
+        if (participants.length === 0) {
+          avatarsHTML = `<span class=\"participants-label\">No participants yet</span>`;
+        } else {
+          participants.slice(0, maxVisible).forEach((p) => {
+            const local = p.split("@")[0];
+            let initials = "";
+            if (local.includes(".")) {
+              const parts = local.split(".");
+              initials = (parts[0][0] || "") + (parts[1] ? parts[1][0] : (parts[0][1]||""));
+            } else if (local.includes("_")) {
+              const parts = local.split("_");
+              initials = (parts[0][0] || "") + (parts[1] ? parts[1][0] : (parts[0][1]||""));
+            } else {
+              initials = local.slice(0, 2);
+            }
+            initials = initials.toUpperCase();
+            avatarsHTML += `<div class=\"avatar\" title=\"${p}\">${initials}</div>`;
+          });
+        }
+
+        const remaining = participants.length - maxVisible;
+        const moreHTML = remaining > 0 ? `<div class=\"more-badge\">+${remaining}</div>` : "";
+
+        const participantsSection = `
+          <div class=\"participants\">
+            <div class=\"avatars\">${avatarsHTML}</div>
+            ${moreHTML}
+          </div>
+        `;
+
         activityCard.innerHTML = `
           <h4>${name}</h4>
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          ${participantsSection}
         `;
 
         activitiesList.appendChild(activityCard);
